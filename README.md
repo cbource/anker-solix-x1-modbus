@@ -35,7 +35,9 @@ This integration exposes all critical metrics across various categories, includi
 1. Before adding the integration, **ensure you disable/comment out your old `modbus.yaml`** configuration and restart Home Assistant. The inverter may drop connections if both the YAML and the integration try to poll simultaneously.
 2. Go to **Settings > Devices & Services > Integrations**.
 3. Click **Add Integration** and search for "Anker Solix X1".
-4. Enter your Inverter's IP Address (e.g., `192.168.0.139`) and Port (default `502`).
+4. Enter your Inverter's IP Address (e.g., `192.168.0.139`), Port (default `502`), and **Scan Interval**.
+   - **Scan Interval (Polling Frequency):** Defines how often the integration queries the inverter for updates. The unit is in **seconds**. 
+   - **Recommendation:** A value of `30` seconds is recommended. Setting this too low (e.g., `< 10`) may overwhelm the inverter's Modbus TCP interface and cause connection timeouts, while setting it too high will result in sluggish dashboard updates.
 5. Click Submit. All 141 sensors will be automatically created!
 
 ## Potential Issues & Troubleshooting
