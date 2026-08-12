@@ -1,0 +1,24 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Anker Solix X1 Modbus",
+                "description": "Set up your Anker Solix X1 inverter via Modbus TCP.",
+                "data": {
+                    "name": "Device Name",
+                    "host": "IP Address",
+                    "port": "Modbus TCP Port",
+                    "scan_interval": "Scan Interval (seconds)"
+                },
+                "data_description": {
+                    "host": "The local IP address of your Anker Solix X1 inverter.",
+                    "port": "Default Modbus TCP port is 502.",
+                    "scan_interval": "How often to poll the inverter (5–300 seconds). Recommended: 30."
+                }
+            }
+        },
+        "abort": {
+            "already_configured": "This inverter is already configured."
+        }
+    }
+}
