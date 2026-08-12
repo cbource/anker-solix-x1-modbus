@@ -168,14 +168,9 @@ class AnkerSolixSensor(CoordinatorEntity, SensorEntity):
         super().__init__(coordinator)
         self._config = config
         
-        # Use only the config name since config name already contains 'Solix X1'
-        self._attr_name = f"{device_name} {config['name']}" 
-        
-        # Determine unique id
-        if hasattr(self, 'entry_id'):
-            self._attr_unique_id = f"{entry_id}_{config['unique_id']}"
-        else:
-            self._attr_unique_id = f"{device_name}_{config['unique_id']}"
+        # Force exact match with previous YAML configuration
+        self._attr_name = config['name']
+        self._attr_unique_id = config['unique_id']
         
         # Map device classes
         dc = config.get("device_class")
