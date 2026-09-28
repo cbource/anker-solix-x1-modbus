@@ -115,11 +115,11 @@ class AnkerSolixNumber(CoordinatorEntity, NumberEntity):
                     int_val += 4294967296
                 high = (int_val >> 16) & 0xFFFF
                 low = int_val & 0xFFFF
-                result = await self.client.write_registers(self._address, [high, low], slave=1)
+                result = await self.client.write_registers(self._address, [high, low], device_id=1)
             else:
                 if int_val < 0:
                     int_val += 65536
-                result = await self.client.write_register(self._address, int_val, slave=1)
+                result = await self.client.write_register(self._address, int_val, device_id=1)
                 
             if result.isError():
                 _LOGGER.error("Failed to write number %s at %s", self._attr_name, self._address)
@@ -127,3 +127,13 @@ class AnkerSolixNumber(CoordinatorEntity, NumberEntity):
                 await self.coordinator.async_request_refresh()
         except ModbusException as e:
             _LOGGER.error("Modbus error writing %s: %s", self._attr_name, e)
+
+    @property
+    def device_info(self):
+        from homeassistant.helpers.device_registry import DeviceInfo
+        from .const import DOMAIN
+        return DeviceInfo(
+            identifiers={(DOMAIN, self.coordinator.config_entry.entry_id if hasattr(self, 'coordinator') else self._entry_id)},
+            name="Anker Solix X1",
+            manufacturer="Anker",
+        )

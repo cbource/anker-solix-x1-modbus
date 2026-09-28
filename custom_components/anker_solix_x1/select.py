@@ -89,10 +89,20 @@ class AnkerSolixSelect(CoordinatorEntity, SelectEntity):
             try:
                 if not self.client.connected:
                     await self.client.connect()
-                result = await self.client.write_register(self._address, val, slave=1)
+                result = await self.client.write_register(self._address, val, device_id=1)
                 if result.isError():
                     _LOGGER.error("Failed to write select %s at %s", self._attr_name, self._address)
                 else:
                     await self.coordinator.async_request_refresh()
             except ModbusException as e:
                 _LOGGER.error("Modbus error writing %s: %s", self._attr_name, e)
+
+    @property
+    def device_info(self):
+        from homeassistant.helpers.device_registry import DeviceInfo
+        from .const import DOMAIN
+        return DeviceInfo(
+            identifiers={(DOMAIN, self.coordinator.config_entry.entry_id if hasattr(self, 'coordinator') else self._entry_id)},
+            name="Anker Solix X1",
+            manufacturer="Anker",
+        )

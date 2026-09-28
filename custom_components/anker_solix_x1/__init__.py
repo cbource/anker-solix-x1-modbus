@@ -66,9 +66,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         try:
             for start_addr, count, reg_type in REGISTER_BLOCKS:
                 if reg_type == "holding":
-                    result = await client.read_holding_registers(start_addr, count, slave=1)
+                    result = await client.read_holding_registers(start_addr, count=count, device_id=1)
                 else:
-                    result = await client.read_input_registers(start_addr, count, slave=1)
+                    result = await client.read_input_registers(start_addr, count=count, device_id=1)
 
                 if result.isError():
                     _LOGGER.warning("Failed to read %s block at %s", reg_type, start_addr)
