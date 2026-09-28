@@ -20,7 +20,7 @@ from .sensor import SENSOR_TYPES
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = ["sensor"]
+PLATFORMS = ["sensor", "select", "number", "button"]
 
 REGISTER_BLOCKS = [
     (10000, 50, "input"),
