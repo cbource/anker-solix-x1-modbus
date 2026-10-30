@@ -30,7 +30,7 @@ This integration was built to replace manual `modbus.yaml` configurations, allow
 ## Features
 - **100% UI Configurable:** No more editing massive YAML files.
 - **Data Continuity:** Designed to use the exact same Entity IDs as standard community YAML configurations. Your historical energy statistics will transition seamlessly.
-- **Comprehensive:** Maps all 141 known sensors, including PV generation, grid power, battery status, and internal temperatures.
+- **Comprehensive:** Maps 142 sensors, including PV generation, grid power, battery status, and internal temperatures.
 
 ## Supported Entities
 This integration exposes all critical metrics across various categories, including but not limited to:
@@ -65,7 +65,7 @@ This integration exposes all critical metrics across various categories, includi
 3. Enter your Inverter's IP Address (e.g., `192.168.0.139`), Port (default `502`), and **Scan Interval**.
    - **Scan Interval (Polling Frequency):** Defines how often the integration queries the inverter for updates. The unit is in **seconds**. 
    - **Recommendation:** A value of `30` seconds is recommended. Setting this too low (e.g., `< 10`) may overwhelm the inverter's Modbus TCP interface and cause connection timeouts, while setting it too high will result in sluggish dashboard updates.
-4. Click Submit. All 141 sensors will be automatically created!
+4. Click Submit. All sensors, controls and buttons will be automatically created!
 
 ### Migrating from YAML
 If you are currently using a `modbus.yaml` configuration for your Anker Solix X1, follow these steps to migrate without losing your Energy Dashboard history:
