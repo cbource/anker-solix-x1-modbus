@@ -71,15 +71,11 @@ class AnkerSolixX1ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         config_entry: config_entries.ConfigEntry,
     ) -> config_entries.OptionsFlow:
         """Get the options flow for this handler."""
-        return AnkerSolixX1OptionsFlowHandler(config_entry)
+        return AnkerSolixX1OptionsFlowHandler()
 
 
 class AnkerSolixX1OptionsFlowHandler(config_entries.OptionsFlow):
     """Handle Anker Solix X1 options."""
-
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        """Initialize options flow."""
-        self.config_entry = config_entry
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None

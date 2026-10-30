@@ -1,7 +1,7 @@
 {
     "name": "Anker Solix X1 Modbus",
     "render_readme": true,
-    "homeassistant": "2024.11.0",
+    "homeassistant": "2024.12.0",
     "zip_release": true,
     "filename": "anker_solix_x1.zip"
 }

@@ -13,6 +13,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_PORT, CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import DOMAIN
@@ -127,6 +128,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_options_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Handle options update."""
     await hass.config_entries.async_reload(entry.entry_id)
+
+
+async def async_remove_config_entry_device(
+    hass: HomeAssistant, entry: ConfigEntry, device_entry: DeviceEntry
+) -> bool:
+    """Allow removing stale devices, but never the inverter device itself."""
+    return (DOMAIN, entry.entry_id) not in device_entry.identifiers
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

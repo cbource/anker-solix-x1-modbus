@@ -21,11 +21,13 @@ This integration exposes all critical metrics across various categories, includi
 ## Installation
 
 ### Method 1: HACS (Recommended)
+[![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=cbource&repository=anker-solix-x1-modbus&category=integration)
+
 1. Open Home Assistant and navigate to **HACS**.
-2. Go to **Integrations**, click the three dots in the top right, and select **Custom repositories**.
-3. Add `https://github.com/cbource/anker-solix-x1-modbus` as an **Integration**.
-4. Click "Install" on the Anker Solix X1 Modbus repository.
-5. Restart Home Assistant.
+2. Search for **Anker Solix X1 Modbus** (until it is in the default HACS list, add `https://github.com/cbource/anker-solix-x1-modbus` as a custom repository of type **Integration**).
+3. Click **Download**.
+4. Restart Home Assistant.
+5. Go to **Settings > Devices & services > Add integration** and search for **Anker Solix X1 Modbus**.
 
 ### Method 2: Manual
 1. Download the latest release from this repository.
