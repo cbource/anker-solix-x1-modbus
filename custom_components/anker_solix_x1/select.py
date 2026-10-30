@@ -1,13 +1,16 @@
-import logging
-from pymodbus.exceptions import ModbusException
+"""Select platform for the Anker Solix X1 Modbus integration."""
+
+from __future__ import annotations
+
 from homeassistant.components.select import SelectEntity
-from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from .const import DOMAIN
 
-_LOGGER = logging.getLogger(__name__)
+from .const import DOMAIN
+from .entity import async_write_registers, build_device_info
 
 WORK_MODES = {
     0: "Self-consumption",
@@ -49,13 +52,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     data = hass.data[DOMAIN][entry.entry_id]
     coordinator = data["coordinator"]
     client = data["client"]
-    entities = [AnkerSolixSelect(coordinator, client, config) for config in SELECT_TYPES]
+    entities = [
+        AnkerSolixSelect(coordinator, client, config, entry.entry_id)
+        for config in SELECT_TYPES
+    ]
     async_add_entities(entities)
 
 class AnkerSolixSelect(CoordinatorEntity, SelectEntity):
-    def __init__(self, coordinator, client, config):
+    def __init__(self, coordinator, client, config, entry_id):
         super().__init__(coordinator)
         self.client = client
+        self._entry_id = entry_id
         self._config = config
         self._attr_name = config["name"]
         self._attr_unique_id = config["unique_id"]
@@ -84,25 +91,16 @@ class AnkerSolixSelect(CoordinatorEntity, SelectEntity):
         return None
 
     async def async_select_option(self, option: str) -> None:
+        """Write the selected option to the inverter."""
         val = self._reverse_map.get(option)
-        if val is not None:
-            try:
-                if not self.client.connected:
-                    await self.client.connect()
-                result = await self.client.write_register(self._address, val, device_id=1)
-                if result.isError():
-                    _LOGGER.error("Failed to write select %s at %s", self._attr_name, self._address)
-                else:
-                    await self.coordinator.async_request_refresh()
-            except ModbusException as e:
-                _LOGGER.error("Modbus error writing %s: %s", self._attr_name, e)
+        if val is None:
+            raise HomeAssistantError(f"Unknown option {option!r}")
+        await async_write_registers(
+            self.client, self._address, [val], self._attr_name
+        )
+        await self.coordinator.async_request_refresh()
 
     @property
     def device_info(self):
-        from homeassistant.helpers.device_registry import DeviceInfo
-        from .const import DOMAIN
-        return DeviceInfo(
-            identifiers={(DOMAIN, self.coordinator.config_entry.entry_id if hasattr(self, 'coordinator') else self._entry_id)},
-            name="Anker Solix X1",
-            manufacturer="Anker",
-        )
+        """Group the select under the inverter device."""
+        return build_device_info(self._entry_id)

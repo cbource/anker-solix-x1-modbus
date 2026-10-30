@@ -1,13 +1,15 @@
-import logging
-from pymodbus.exceptions import ModbusException
+"""Number platform for the Anker Solix X1 Modbus integration."""
+
+from __future__ import annotations
+
 from homeassistant.components.number import NumberEntity
-from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from .const import DOMAIN
 
-_LOGGER = logging.getLogger(__name__)
+from .const import DOMAIN
+from .entity import async_write_registers, build_device_info
 
 NUMBER_TYPES = [
     {
@@ -64,13 +66,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     data = hass.data[DOMAIN][entry.entry_id]
     coordinator = data["coordinator"]
     client = data["client"]
-    entities = [AnkerSolixNumber(coordinator, client, config) for config in NUMBER_TYPES]
+    entities = [
+        AnkerSolixNumber(coordinator, client, config, entry.entry_id)
+        for config in NUMBER_TYPES
+    ]
     async_add_entities(entities)
 
 class AnkerSolixNumber(CoordinatorEntity, NumberEntity):
-    def __init__(self, coordinator, client, config):
+    def __init__(self, coordinator, client, config, entry_id):
         super().__init__(coordinator)
         self.client = client
+        self._entry_id = entry_id
         self._config = config
         self._attr_name = config["name"]
         self._attr_unique_id = config["unique_id"]
@@ -105,35 +111,23 @@ class AnkerSolixNumber(CoordinatorEntity, NumberEntity):
         return None
 
     async def async_set_native_value(self, value: float) -> None:
-        try:
-            if not self.client.connected:
-                await self.client.connect()
-            
-            int_val = int(value)
-            if self._is_32bit:
-                if int_val < 0:
-                    int_val += 4294967296
-                high = (int_val >> 16) & 0xFFFF
-                low = int_val & 0xFFFF
-                result = await self.client.write_registers(self._address, [high, low], device_id=1)
-            else:
-                if int_val < 0:
-                    int_val += 65536
-                result = await self.client.write_register(self._address, int_val, device_id=1)
-                
-            if result.isError():
-                _LOGGER.error("Failed to write number %s at %s", self._attr_name, self._address)
-            else:
-                await self.coordinator.async_request_refresh()
-        except ModbusException as e:
-            _LOGGER.error("Modbus error writing %s: %s", self._attr_name, e)
+        """Write the value to the inverter."""
+        int_val = int(value)
+        if self._is_32bit:
+            if int_val < 0:
+                int_val += 4294967296
+            registers = [(int_val >> 16) & 0xFFFF, int_val & 0xFFFF]
+        else:
+            if int_val < 0:
+                int_val += 65536
+            registers = [int_val]
+
+        await async_write_registers(
+            self.client, self._address, registers, self._attr_name
+        )
+        await self.coordinator.async_request_refresh()
 
     @property
     def device_info(self):
-        from homeassistant.helpers.device_registry import DeviceInfo
-        from .const import DOMAIN
-        return DeviceInfo(
-            identifiers={(DOMAIN, self.coordinator.config_entry.entry_id if hasattr(self, 'coordinator') else self._entry_id)},
-            name="Anker Solix X1",
-            manufacturer="Anker",
-        )
+        """Group the number under the inverter device."""
+        return build_device_info(self._entry_id)

@@ -16,6 +16,7 @@ This integration exposes all critical metrics across various categories, includi
 - **Energy Counters:** Daily/Total PV Generation, Battery Charge, Feed-in, Purchased Energy
 - **PCS Status & Alarms:** Rated Power, MPPT strings, System Alarms (1-8), Internal Temperature
 - **Voltage & Current:** PV1-PV4 Voltage and Current, Grid Voltage
+- **Controls (write access):** Switch On/Off buttons, Work Mode and import/export limit mode selects, and power-control numbers. These write to the inverter's holding registers. A rejected or failed write is reported as an error in Home Assistant. Use them with care; automations should not drive them unless you intend to control the inverter.
 
 ## Installation
 

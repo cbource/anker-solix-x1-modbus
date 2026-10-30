@@ -1,0 +1,32 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Publish release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check tag matches manifest version
+        run: |
+          version=$(python3 -c "import json; print(json.load(open('custom_components/anker_solix_x1/manifest.json'))['version'])")
+          if [ "v${version}" != "${GITHUB_REF_NAME}" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match manifest version ${version}" >&2
+            exit 1
+          fi
+      - name: Zip integration
+        run: |
+          cd custom_components/anker_solix_x1
+          zip -r ../../anker_solix_x1.zip . -x "*/__pycache__/*"
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: anker_solix_x1.zip
+          generate_release_notes: true

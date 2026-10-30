@@ -18,6 +18,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
+from .entity import build_device_info
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -278,13 +279,8 @@ class AnkerSolixSensor(CoordinatorEntity, SensorEntity):
 
     @property
     def device_info(self) -> DeviceInfo:
-        """Return device information to group all sensors under one device."""
-        return DeviceInfo(
-            identifiers={(DOMAIN, self._entry_id)},
-            name="Anker Solix X1",
-            manufacturer="Anker",
-            model="Solix X1",
-        )
+        """Return device information to group all entities under one device."""
+        return build_device_info(self._entry_id)
 
     @property
     def native_value(self) -> float | int | None:

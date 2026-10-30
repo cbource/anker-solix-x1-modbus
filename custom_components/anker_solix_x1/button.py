@@ -1,12 +1,14 @@
-import logging
-from pymodbus.exceptions import ModbusException
-from homeassistant.components.button import ButtonEntity
-from homeassistant.core import HomeAssistant
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from .const import DOMAIN
+"""Button platform for the Anker Solix X1 Modbus integration."""
 
-_LOGGER = logging.getLogger(__name__)
+from __future__ import annotations
+
+from homeassistant.components.button import ButtonEntity
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+
+from .const import DOMAIN
+from .entity import async_write_registers, build_device_info
 
 BUTTON_TYPES = [
     {
@@ -14,50 +16,47 @@ BUTTON_TYPES = [
         "unique_id": "solix_x1_switch_on",
         "address": 10073,
         "payload": 1,
-        "icon": "mdi:power-on"
+        "icon": "mdi:power-on",
     },
     {
         "name": "Solix X1 Switch Off",
         "unique_id": "solix_x1_switch_off",
         "address": 10073,
         "payload": 2,
-        "icon": "mdi:power-off"
+        "icon": "mdi:power-off",
     },
 ]
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback) -> None:
-    data = hass.data[DOMAIN][entry.entry_id]
-    client = data["client"]
-    entities = [AnkerSolixButton(client, config, entry.entry_id) for config in BUTTON_TYPES]
-    async_add_entities(entities)
+
+async def async_setup_entry(
+    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
+) -> None:
+    """Set up button entities from a config entry."""
+    client = hass.data[DOMAIN][entry.entry_id]["client"]
+    async_add_entities(
+        AnkerSolixButton(client, config, entry.entry_id) for config in BUTTON_TYPES
+    )
+
 
 class AnkerSolixButton(ButtonEntity):
-    def __init__(self, client, config, entry_id):
-        self._entry_id = entry_id
+    """Button that writes a command value to the inverter."""
+
+    def __init__(self, client, config: dict, entry_id: str) -> None:
         self.client = client
+        self._entry_id = entry_id
         self._attr_name = config["name"]
         self._attr_unique_id = config["unique_id"]
         self._attr_icon = config["icon"]
         self._address = config["address"]
         self._payload = config["payload"]
-        self._entry_id = client._entry_id if hasattr(client, '_entry_id') else 'solix_x1_device'
 
     async def async_press(self) -> None:
-        try:
-            if not self.client.connected:
-                await self.client.connect()
-            result = await self.client.write_register(self._address, self._payload, device_id=1)
-            if result.isError():
-                _LOGGER.error("Failed to write button %s at %s", self._attr_name, self._address)
-        except ModbusException as e:
-            _LOGGER.error("Modbus error writing %s: %s", self._attr_name, e)
+        """Send the command to the inverter."""
+        await async_write_registers(
+            self.client, self._address, [self._payload], self._attr_name
+        )
 
     @property
     def device_info(self):
-        from homeassistant.helpers.device_registry import DeviceInfo
-        from .const import DOMAIN
-        return DeviceInfo(
-            identifiers={(DOMAIN, self.coordinator.config_entry.entry_id if hasattr(self, 'coordinator') else self._entry_id)},
-            name="Anker Solix X1",
-            manufacturer="Anker",
-        )
+        """Group the button under the inverter device."""
+        return build_device_info(self._entry_id)
