@@ -1,8 +1,31 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/cbource/anker-solix-x1-modbus/main/custom_components/anker_solix_x1/brand/icon.png" alt="Anker Solix X1 Modbus" width="128">
+</p>
+
 # Anker Solix X1 Modbus Integration
+
+[![HACS Custom](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
+[![GitHub Release](https://img.shields.io/github/v/release/cbource/anker-solix-x1-modbus)](https://github.com/cbource/anker-solix-x1-modbus/releases)
+[![Downloads](https://img.shields.io/github/downloads/cbource/anker-solix-x1-modbus/total)](https://github.com/cbource/anker-solix-x1-modbus/releases)
+[![HACS Validation](https://github.com/cbource/anker-solix-x1-modbus/actions/workflows/hacs.yaml/badge.svg)](https://github.com/cbource/anker-solix-x1-modbus/actions/workflows/hacs.yaml)
+[![Hassfest](https://github.com/cbource/anker-solix-x1-modbus/actions/workflows/hassfest.yaml/badge.svg)](https://github.com/cbource/anker-solix-x1-modbus/actions/workflows/hassfest.yaml)
+[![License](https://img.shields.io/github/license/cbource/anker-solix-x1-modbus)](LICENSE)
+[![Open in HACS](https://img.shields.io/badge/Open%20in-HACS-41BDF5.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=cbource&repository=anker-solix-x1-modbus&category=integration)
 
 A custom Home Assistant integration to communicate with Anker Solix X1 energy storage systems via Modbus TCP.
 
 This integration was built to replace manual `modbus.yaml` configurations, allowing you to easily set up your inverter from the Home Assistant UI while automatically retaining all your historical Energy Dashboard data!
+
+## Screenshots
+
+| Controls | Sensors |
+|---|---|
+| ![Device page showing the control entities](https://raw.githubusercontent.com/cbource/anker-solix-x1-modbus/main/docs/images/device-controls.png) | ![Device page showing sensor entities](https://raw.githubusercontent.com/cbource/anker-solix-x1-modbus/main/docs/images/device-sensors.png) |
+
+## Requirements
+- Home Assistant 2024.12.0 or newer.
+- An Anker Solix X1 with Modbus TCP enabled and reachable from Home Assistant (default port `502`).
+- Only one Modbus TCP client can normally talk to the inverter at a time.
 
 ## Features
 - **100% UI Configurable:** No more editing massive YAML files.
