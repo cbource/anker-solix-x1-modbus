@@ -10,6 +10,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 from .entity import async_write_registers, build_device_info
+from .unique_ids import build_unique_id, uses_legacy_unique_ids
 
 NUMBER_TYPES = [
     {
@@ -66,20 +67,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     data = hass.data[DOMAIN][entry.entry_id]
     coordinator = data["coordinator"]
     client = data["client"]
+    legacy = uses_legacy_unique_ids(entry.data)
     entities = [
-        AnkerSolixNumber(coordinator, client, config, entry.entry_id)
+        AnkerSolixNumber(coordinator, client, config, entry.entry_id, legacy)
         for config in NUMBER_TYPES
     ]
     async_add_entities(entities)
 
 class AnkerSolixNumber(CoordinatorEntity, NumberEntity):
-    def __init__(self, coordinator, client, config, entry_id):
+    def __init__(self, coordinator, client, config, entry_id, legacy=True):
         super().__init__(coordinator)
         self.client = client
         self._entry_id = entry_id
         self._config = config
         self._attr_name = config["name"]
-        self._attr_unique_id = config["unique_id"]
+        self._attr_unique_id = build_unique_id(config["unique_id"], entry_id, legacy)
         self._attr_native_unit_of_measurement = config.get("unit_of_measurement")
         self._attr_native_min_value = config["min"]
         self._attr_native_max_value = config["max"]

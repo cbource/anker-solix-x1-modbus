@@ -13,11 +13,13 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_PORT, CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import DOMAIN
 from .sensor import SENSOR_TYPES
+from .unique_ids import CONF_LEGACY_UNIQUE_IDS, should_use_legacy_unique_ids
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -34,8 +36,37 @@ REGISTER_BLOCKS = [
 ]
 
 
+def _async_decide_unique_ids(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Persist once whether this entry keeps the original bare unique IDs.
+
+    Runs before the first await so concurrent entries cannot both claim them,
+    and before the update listener is registered so it does not trigger a reload.
+    """
+    if CONF_LEGACY_UNIQUE_IDS in entry.data:
+        return
+
+    registry = er.async_get(hass)
+    legacy = should_use_legacy_unique_ids(
+        entry.entry_id,
+        [
+            (other.entry_id, other.data)
+            for other in hass.config_entries.async_entries(DOMAIN)
+        ],
+        [
+            (reg.config_entry_id, reg.unique_id)
+            for reg in registry.entities.values()
+            if reg.platform == DOMAIN and reg.config_entry_id is not None
+        ],
+    )
+    hass.config_entries.async_update_entry(
+        entry, data={**entry.data, CONF_LEGACY_UNIQUE_IDS: legacy}
+    )
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Anker Solix X1 from a config entry."""
+    _async_decide_unique_ids(hass, entry)
+
     host = entry.data[CONF_HOST]
     port = entry.data[CONF_PORT]
     # use options if available, else data

@@ -83,6 +83,7 @@ If you are currently using a `modbus.yaml` configuration for your Anker Solix X1
 - **Unavailable Entities**: If your entities show up as unavailable, verify the inverter is online and connected to the same local network as your Home Assistant instance. Check the Home Assistant logs for specific Modbus exceptions.
 - **Energy Dashboard Not Updating**: If you transitioned from YAML and the dashboard stopped updating, verify that the new Entity IDs exactly match the old ones (e.g., `sensor.solix_x1_daily_pv_generation`). See the migration section above.
 - **Duplicate Integration Error**: The integration prevents adding the same inverter IP twice. If you see an "already configured" error, check your existing integrations.
+- **Multiple Inverters**: You can add more than one inverter (different host/port). The first one keeps the original entity IDs so history and the YAML migration continue to work; any additional inverter's entities get its config entry ID appended to their unique ID, so they never collide.
 
 ## Disclaimer
 This integration is community-supported and not officially affiliated with Anker. Use at your own risk.

@@ -9,6 +9,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
 from .entity import async_write_registers, build_device_info
+from .unique_ids import build_unique_id, uses_legacy_unique_ids
 
 BUTTON_TYPES = [
     {
@@ -34,18 +35,21 @@ async def async_setup_entry(
     """Set up button entities from a config entry."""
     client = hass.data[DOMAIN][entry.entry_id]["client"]
     async_add_entities(
-        AnkerSolixButton(client, config, entry.entry_id) for config in BUTTON_TYPES
+        AnkerSolixButton(
+            client, config, entry.entry_id, uses_legacy_unique_ids(entry.data)
+        )
+        for config in BUTTON_TYPES
     )
 
 
 class AnkerSolixButton(ButtonEntity):
     """Button that writes a command value to the inverter."""
 
-    def __init__(self, client, config: dict, entry_id: str) -> None:
+    def __init__(self, client, config: dict, entry_id: str, legacy: bool) -> None:
         self.client = client
         self._entry_id = entry_id
         self._attr_name = config["name"]
-        self._attr_unique_id = config["unique_id"]
+        self._attr_unique_id = build_unique_id(config["unique_id"], entry_id, legacy)
         self._attr_icon = config["icon"]
         self._address = config["address"]
         self._payload = config["payload"]

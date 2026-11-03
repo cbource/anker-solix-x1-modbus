@@ -19,6 +19,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 from .entity import build_device_info
+from .unique_ids import build_unique_id, uses_legacy_unique_ids
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -226,7 +227,13 @@ async def async_setup_entry(
     entities = []
     for s_conf in SENSOR_TYPES:
         entities.append(
-            AnkerSolixSensor(coordinator, entry.entry_id, device_name, s_conf)
+            AnkerSolixSensor(
+                coordinator,
+                entry.entry_id,
+                device_name,
+                s_conf,
+                uses_legacy_unique_ids(entry.data),
+            )
         )
 
     async_add_entities(entities)
@@ -235,7 +242,14 @@ async def async_setup_entry(
 class AnkerSolixSensor(CoordinatorEntity, SensorEntity):
     """Representation of an Anker Solix X1 Modbus sensor."""
 
-    def __init__(self, coordinator, entry_id: str, device_name: str, config: dict) -> None:
+    def __init__(
+        self,
+        coordinator,
+        entry_id: str,
+        device_name: str,
+        config: dict,
+        legacy: bool = True,
+    ) -> None:
         """Initialize the sensor."""
         super().__init__(coordinator)
         self._config = config
@@ -243,7 +257,7 @@ class AnkerSolixSensor(CoordinatorEntity, SensorEntity):
 
         # Force exact match with previous YAML configuration
         self._attr_name = config["name"]
-        self._attr_unique_id = config["unique_id"]
+        self._attr_unique_id = build_unique_id(config["unique_id"], entry_id, legacy)
         self._attr_has_entity_name = False
 
         # Map device classes

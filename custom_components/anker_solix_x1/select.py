@@ -11,6 +11,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 from .entity import async_write_registers, build_device_info
+from .unique_ids import build_unique_id, uses_legacy_unique_ids
 
 WORK_MODES = {
     0: "Self-consumption",
@@ -52,20 +53,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     data = hass.data[DOMAIN][entry.entry_id]
     coordinator = data["coordinator"]
     client = data["client"]
+    legacy = uses_legacy_unique_ids(entry.data)
     entities = [
-        AnkerSolixSelect(coordinator, client, config, entry.entry_id)
+        AnkerSolixSelect(coordinator, client, config, entry.entry_id, legacy)
         for config in SELECT_TYPES
     ]
     async_add_entities(entities)
 
 class AnkerSolixSelect(CoordinatorEntity, SelectEntity):
-    def __init__(self, coordinator, client, config, entry_id):
+    def __init__(self, coordinator, client, config, entry_id, legacy=True):
         super().__init__(coordinator)
         self.client = client
         self._entry_id = entry_id
         self._config = config
         self._attr_name = config["name"]
-        self._attr_unique_id = config["unique_id"]
+        self._attr_unique_id = build_unique_id(config["unique_id"], entry_id, legacy)
         self._attr_options = list(config["options"].values())
         self._address = config["address"]
         self._options_map = config["options"]
