@@ -97,8 +97,9 @@ class AnkerSolixNumber(CoordinatorEntity, NumberEntity):
         registers = raw_data.get(self._sensor_id)
         if registers and len(registers) > 0:
             if self._is_32bit and len(registers) >= 2:
-                # Assuming big endian word swap as in sensor.py
-                val = (registers[0] << 16) + registers[1]
+                # The X1 stores 32-bit values low word first (same as the
+                # swap="word" decoding of these registers in sensor.py).
+                val = (registers[1] << 16) + registers[0]
                 # Handle signed 32-bit if needed (charge/discharge is signed)
                 if self._sensor_id == "solix_x1_battery_charge_discharge_control":
                     if val > 2147483647:
@@ -118,7 +119,8 @@ class AnkerSolixNumber(CoordinatorEntity, NumberEntity):
         if self._is_32bit:
             if int_val < 0:
                 int_val += 4294967296
-            registers = [(int_val >> 16) & 0xFFFF, int_val & 0xFFFF]
+            # Low word first, matching how the X1 stores 32-bit values.
+            registers = [int_val & 0xFFFF, (int_val >> 16) & 0xFFFF]
         else:
             if int_val < 0:
                 int_val += 65536
